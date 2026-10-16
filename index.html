@@ -1,0 +1,3514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr.Tool — Premium Toolbox</title>
+
+<style>
+:root {
+  --bg:#090d1b;
+  --panel:#11182b;
+  --panel2:#171f36;
+  --text:#f4f6ff;
+  --muted:#a5aec9;
+  --accent:#8b5cf6;
+  --accent2:#06b6d4;
+  --border:rgba(255,255,255,.09);
+  --radius:19px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 10% 0%,rgba(139,92,246,.17),transparent 35%),
+    radial-gradient(ellipse at 95% 15%,rgba(6,182,212,.12),transparent 30%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background .3s,color .3s;
+}
+
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--accent2);
+  outline-offset:3px;
+}
+
+/* LOADING SCREEN */
+
+#loader{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:18px;
+  background:#090d1b;
+  transition:opacity .6s,visibility .6s;
+}
+
+#loader.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.loader-logo{
+  width:86px;
+  height:86px;
+  border-radius:27px;
+  display:grid;
+  place-items:center;
+  font-size:38px;
+  font-weight:900;
+  background:linear-gradient(135deg,#8b5cf6,#06b6d4,#ec4899);
+  box-shadow:0 0 60px #8b5cf655;
+  animation:float 1.4s infinite alternate;
+}
+
+.loader-title{
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.loader-title span{
+  background:linear-gradient(90deg,#a78bfa,#22d3ee,#fb7185);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.loader-track{
+  width:220px;
+  height:5px;
+  border-radius:10px;
+  background:#20283d;
+  overflow:hidden;
+}
+
+.loader-track div{
+  width:0;
+  height:100%;
+  background:linear-gradient(90deg,#8b5cf6,#06b6d4,#f472b6);
+  animation:load 1.7s ease forwards;
+}
+
+@keyframes load{to{width:100%}}
+@keyframes float{to{transform:translateY(-8px) rotate(4deg)}}
+
+/* APP LAYOUT */
+
+.app{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:250px;
+  flex-shrink:0;
+  height:100vh;
+  position:sticky;
+  top:0;
+  padding:22px 15px;
+  background:rgba(13,18,35,.94);
+  backdrop-filter:blur(20px);
+  border-right:1px solid var(--border);
+  transition:width .3s,transform .3s;
+  overflow-y:auto;
+  z-index:100;
+}
+
+.sidebar.collapsed{width:82px}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:5px 8px 25px;
+  font-size:22px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.brand-icon{
+  width:43px;
+  height:43px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899,#06b6d4);
+  box-shadow:0 5px 24px #8b5cf644;
+}
+
+.brand span:last-child{
+  background:linear-gradient(90deg,#c4b5fd,#67e8f9);
+  color:transparent;
+  -webkit-background-clip:text;
+}
+
+.side-label{
+  color:#717d9d;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  padding:14px 12px 9px;
+  white-space:nowrap;
+}
+
+.side-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:12px;
+  margin:3px 0;
+  border:1px solid transparent;
+  border-radius:13px;
+  color:var(--muted);
+  background:transparent;
+  text-align:left;
+  transition:.2s;
+  white-space:nowrap;
+}
+
+.side-btn .nav-icon{
+  width:24px;
+  flex-shrink:0;
+  text-align:center;
+  font-size:19px;
+}
+
+.side-btn:hover,.side-btn.active{
+  color:white;
+  background:linear-gradient(100deg,#8b5cf633,#06b6d422);
+  border-color:#8b5cf644;
+}
+
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .side-label,
+.sidebar.collapsed .side-text{
+  display:none;
+}
+
+.sidebar.collapsed .side-btn{
+  justify-content:center;
+  padding:13px 8px;
+}
+
+.main{
+  min-width:0;
+  flex:1;
+  padding:22px clamp(14px,3vw,38px) 40px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:28px;
+}
+
+.top-left,.top-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.icon-btn{
+  min-width:42px;
+  height:42px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  color:var(--text);
+  background:var(--panel);
+}
+
+.icon-btn:hover{border-color:var(--accent)}
+
+.status-pill{
+  border:1px solid #34d39944;
+  background:#10b98114;
+  color:#6ee7b7;
+  padding:9px 12px;
+  border-radius:30px;
+  font-size:12px;
+}
+
+.page{display:none;animation:appear .3s ease}
+.page.active{display:block}
+
+@keyframes appear{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* HERO */
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  min-height:245px;
+  padding:clamp(22px,4vw,40px);
+  border:1px solid #8b5cf633;
+  border-radius:27px;
+  background:
+    radial-gradient(circle at 90% 20%,#06b6d444,transparent 35%),
+    radial-gradient(circle at 70% 100%,#ec489933,transparent 35%),
+    linear-gradient(120deg,#181631,#111a30 60%,#17243a);
+  margin-bottom:24px;
+}
+
+.hero::after{
+  content:"✦";
+  position:absolute;
+  right:12%;
+  top:8%;
+  font-size:130px;
+  color:#c4b5fd15;
+  pointer-events:none;
+}
+
+.eyebrow{
+  color:#c4b5fd;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.hero h1{
+  font-size:clamp(32px,4vw,51px);
+  line-height:1.08;
+  margin:14px 0;
+  max-width:620px;
+  letter-spacing:-1.5px;
+}
+
+.gradient{
+  background:linear-gradient(90deg,#c4b5fd,#67e8f9,#f9a8d4);
+  color:transparent;
+  -webkit-background-clip:text;
+}
+
+.hero p{
+  max-width:540px;
+  color:#b3bdd8;
+  line-height:1.7;
+}
+
+.searchbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  max-width:590px;
+  margin-top:24px;
+  padding:6px 8px 6px 16px;
+  background:#090d1bdc;
+  border:1px solid #ffffff1b;
+  border-radius:15px;
+}
+
+.searchbar input{
+  width:100%;
+  min-width:0;
+  color:white;
+  background:transparent;
+  border:0;
+  outline:0;
+  padding:10px 0;
+}
+
+.searchbar button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  color:white;
+  background:linear-gradient(135deg,#8b5cf6,#6366f1);
+}
+
+/* CATEGORY CARDS */
+
+.category-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px;
+  margin:22px 0 32px;
+}
+
+.category-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:17px 12px;
+  background:var(--panel);
+  color:white;
+  text-align:left;
+  transition:transform .2s,border-color .2s;
+}
+
+.category-card:hover{
+  transform:translateY(-4px);
+  border-color:#a78bfa88;
+}
+
+.category-card .cat-icon{
+  display:grid;
+  place-items:center;
+  width:43px;
+  height:43px;
+  border-radius:13px;
+  margin-bottom:12px;
+  font-size:22px;
+  background:var(--cat);
+}
+
+.category-card strong{
+  display:block;
+  font-size:13px;
+}
+
+.category-card small{
+  display:block;
+  color:var(--muted);
+  margin-top:5px;
+  font-size:11px;
+}
+
+/* TOOL GRID */
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin:24px 0 16px;
+}
+
+.section-head h2{
+  margin:0;
+  font-size:23px;
+}
+
+.section-head p{
+  color:var(--muted);
+  font-size:13px;
+  margin:6px 0 0;
+}
+
+.filter-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.chip{
+  border:1px solid var(--border);
+  border-radius:30px;
+  padding:9px 13px;
+  background:var(--panel);
+  color:var(--muted);
+  font-size:12px;
+}
+
+.chip.active,.chip:hover{
+  background:#8b5cf633;
+  color:white;
+  border-color:#8b5cf6aa;
+}
+
+.tool-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+}
+
+.tool-card{
+  --card-color:#8b5cf6;
+  position:relative;
+  min-width:0;
+  min-height:151px;
+  overflow:hidden;
+  padding:17px;
+  background:linear-gradient(145deg,var(--panel),#10172a);
+  border:1px solid var(--border);
+  border-radius:18px;
+  cursor:pointer;
+  transition:transform .22s,border-color .22s,box-shadow .22s;
+}
+
+.tool-card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:3px;
+  background:linear-gradient(90deg,var(--card-color),transparent);
+}
+
+.tool-card::after{
+  content:"";
+  position:absolute;
+  right:-35px;
+  top:-35px;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  background:var(--card-color);
+  opacity:.07;
+  filter:blur(8px);
+  pointer-events:none;
+}
+
+.tool-card:hover{
+  transform:translateY(-5px);
+  border-color:var(--card-color);
+  box-shadow:0 12px 35px #0003;
+}
+
+.tool-icon{
+  width:43px;
+  height:43px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:color-mix(in srgb,var(--card-color) 20%,transparent);
+  color:white;
+  font-size:22px;
+  margin-bottom:13px;
+}
+
+.tool-card h3{
+  margin:0 0 7px;
+  font-size:14px;
+  line-height:1.35;
+}
+
+.tool-card p{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+  margin:0;
+}
+
+.favorite{
+  position:absolute;
+  right:10px;
+  top:10px;
+  z-index:2;
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--border);
+  border-radius:9px;
+  color:#9ba6c4;
+  background:#0c1220;
+}
+
+.favorite.on{color:#fbbf24}
+
+.empty{
+  display:none;
+  padding:35px 10px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.footer{
+  border-top:1px solid var(--border);
+  padding-top:22px;
+  margin-top:40px;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* SETTINGS PANEL */
+
+.settings-panel{
+  position:fixed;
+  right:0;
+  top:0;
+  width:min(350px,90vw);
+  height:100vh;
+  z-index:500;
+  padding:24px;
+  background:#10172a;
+  border-left:1px solid var(--border);
+  box-shadow:-15px 0 60px #0005;
+  transform:translateX(110%);
+  transition:transform .3s;
+  overflow:auto;
+}
+
+.settings-panel.open{transform:translateX(0)}
+
+.settings-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:28px;
+}
+
+.settings-head h2{margin:0}
+
+.setting-group{margin-bottom:24px}
+
+.setting-group label{
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+.theme-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.theme-dot{
+  width:40px;
+  height:40px;
+  border:2px solid #ffffff33;
+  border-radius:13px;
+}
+
+.setting-note{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+
+.switch-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:18px 0;
+}
+
+.switch-row input{accent-color:var(--accent)}
+
+/* MODAL */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:700;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:#030712c9;
+  backdrop-filter:blur(8px);
+}
+
+.overlay.open{display:flex}
+
+.modal{
+  width:min(620px,100%);
+  max-height:88vh;
+  overflow:auto;
+  border:1px solid #8b5cf644;
+  border-radius:23px;
+  background:#11182b;
+  box-shadow:0 25px 100px #0008;
+  animation:appear .25s;
+}
+
+.modal-head{
+  position:sticky;
+  top:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:20px;
+  border-bottom:1px solid var(--border);
+  background:#11182bf5;
+  backdrop-filter:blur(15px);
+}
+
+.modal-title{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+}
+
+.modal-title h2{
+  margin:0;
+  font-size:19px;
+}
+
+.modal-title p{
+  margin:5px 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.modal-body{padding:22px}
+
+.close{
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:white;
+  background:#202943;
+  font-size:23px;
+}
+
+.field{
+  display:block;
+  width:100%;
+  padding:13px 14px;
+  margin:10px 0 15px;
+  border:1px solid #ffffff20;
+  border-radius:12px;
+  background:#090f20;
+  color:white;
+  outline:0;
+}
+
+textarea.field{min-height:130px;resize:vertical}
+
+.field-label{
+  color:#c4cce2;
+  font-size:12px;
+  font-weight:700;
+}
+
+.action-btn{
+  padding:12px 16px;
+  border:0;
+  border-radius:12px;
+  color:white;
+  background:linear-gradient(135deg,#8b5cf6,#6366f1);
+  font-weight:700;
+  margin:3px 5px 8px 0;
+}
+
+.action-btn.secondary{
+  background:#222c46;
+  border:1px solid var(--border);
+}
+
+.result-box{
+  padding:14px;
+  margin-top:12px;
+  border:1px solid #8b5cf644;
+  border-radius:12px;
+  background:#080e1e;
+  color:#a5f3fc;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  min-height:42px;
+}
+
+.error{color:#fca5a5}
+.success{color:#86efac}
+
+/* REAL CALCULATOR */
+
+.calculator{
+  max-width:340px;
+  margin:auto;
+  padding:15px;
+  background:#090e1b;
+  border:1px solid #ffffff18;
+  border-radius:22px;
+  box-shadow:0 20px 50px #0005;
+}
+
+.calc-display{
+  width:100%;
+  height:80px;
+  margin-bottom:15px;
+  padding:15px;
+  text-align:right;
+  font-size:30px;
+  color:white;
+  background:#151d32;
+  border:1px solid #ffffff12;
+  border-radius:15px;
+}
+
+.calc-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+}
+
+.calc-key{
+  min-height:53px;
+  border:1px solid #ffffff10;
+  border-radius:13px;
+  background:#1a243c;
+  color:white;
+  font-size:18px;
+  transition:.15s;
+}
+
+.calc-key:hover{filter:brightness(1.3)}
+.calc-key.operator{background:#4c347d}
+.calc-key.clear{background:#803c54}
+.calc-key.equal{
+  background:linear-gradient(135deg,#8b5cf6,#06b6d4);
+  grid-row:span 2;
+}
+.calc-key.zero{grid-column:span 2}
+
+.calc-hint{
+  color:var(--muted);
+  text-align:center;
+  font-size:11px;
+  margin:12px 0 0;
+}
+
+/* DICE AND COIN */
+
+.random-stage{
+  display:grid;
+  place-items:center;
+  padding:25px 10px;
+  min-height:190px;
+}
+
+.dice{
+  width:100px;
+  height:100px;
+  display:grid;
+  place-items:center;
+  border-radius:22px;
+  background:linear-gradient(145deg,#fff,#d8e2ff);
+  color:#34265d;
+  font-size:65px;
+  box-shadow:0 15px 40px #0005;
+}
+
+.dice.roll{animation:diceRoll .8s}
+
+@keyframes diceRoll{
+  0%{transform:rotate(0) scale(1)}
+  30%{transform:rotate(130deg) scale(.8)}
+  65%{transform:rotate(290deg) scale(1.1)}
+  100%{transform:rotate(720deg) scale(1)}
+}
+
+.coin{
+  width:125px;
+  height:125px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:7px solid #fbbf24;
+  background:linear-gradient(145deg,#fde68a,#d97706);
+  color:#663b08;
+  font-size:21px;
+  font-weight:900;
+  box-shadow:inset 0 0 0 5px #ffffff55,0 15px 40px #0005;
+}
+
+.coin.flip{animation:coinFlip .9s}
+
+@keyframes coinFlip{
+  0%{transform:rotateY(0) translateY(0)}
+  50%{transform:rotateY(900deg) translateY(-25px)}
+  100%{transform:rotateY(1800deg) translateY(0)}
+}
+
+/* ABOUT */
+
+.about-card{
+  padding:28px;
+  border:1px solid #8b5cf644;
+  border-radius:23px;
+  background:linear-gradient(135deg,#181631,#111a30);
+}
+
+.author-icon{
+  width:75px;
+  height:75px;
+  display:grid;
+  place-items:center;
+  border-radius:24px;
+  background:linear-gradient(135deg,#8b5cf6,#06b6d4);
+  font-size:35px;
+  margin-bottom:18px;
+}
+
+.about-card p{
+  color:var(--muted);
+  line-height:1.8;
+  max-width:750px;
+}
+
+/* LIGHT THEME */
+
+body.light{
+  --bg:#eef2ff;
+  --panel:#ffffff;
+  --panel2:#f8faff;
+  --text:#172033;
+  --muted:#5c6680;
+  --border:rgba(24,34,60,.13);
+  background:#eef2ff;
+}
+
+body.light .sidebar{
+  background:#ffffffed;
+}
+
+body.light .side-btn:hover,
+body.light .side-btn.active{
+  color:#3b286e;
+}
+
+body.light .hero{
+  background:linear-gradient(120deg,#e9ddff,#dcf8ff,#ffe2ef);
+  border-color:#b8a4ff;
+}
+
+body.light .hero h1{color:#172033}
+body.light .hero p{color:#47516c}
+body.light .searchbar{background:#ffffff}
+body.light .searchbar input{color:#172033}
+body.light .tool-card{background:linear-gradient(145deg,#fff,#f6f7ff)}
+body.light .category-card{color:#172033}
+body.light .settings-panel{background:#fff}
+body.light .modal{background:#fff}
+body.light .modal-head{background:#fffffff5}
+body.light .close{color:#172033;background:#edf0fa}
+body.light .field{background:#f7f8ff;color:#172033;border-color:#d4d9e8}
+body.light .result-box{background:#f4f7ff;color:#075985}
+body.light .calculator{background:#edf0fa}
+body.light .calc-display{background:#fff;color:#172033}
+body.light .calc-key{background:#dfe5f6;color:#172033}
+body.light .calc-key.operator{background:#d8c8ff}
+body.light .calc-key.clear{background:#ffdce5}
+body.light .setting-note{color:#5c6680}
+
+/* RESPONSIVE */
+
+@media(max-width:1150px){
+  .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media(max-width:800px){
+  .sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    transform:translateX(-105%);
+    width:265px;
+    height:100dvh;
+    box-shadow:15px 0 50px #0005;
+  }
+
+  .sidebar.mobile-open{transform:translateX(0)}
+  .sidebar.collapsed{width:265px}
+  .sidebar.collapsed .brand-text,
+  .sidebar.collapsed .side-label,
+  .sidebar.collapsed .side-text{display:block}
+  .sidebar.collapsed .side-btn{justify-content:flex-start;padding:12px}
+  .main{padding:15px}
+  .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{padding:25px 20px}
+  .hero h1{font-size:36px}
+}
+
+@media(max-width:420px){
+  .tool-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .tool-card{padding:13px;min-height:155px}
+  .tool-card h3{font-size:12px}
+  .tool-card p{font-size:10px}
+  .category-card{padding:13px 10px}
+  .status-pill{display:none}
+  .topbar{margin-bottom:17px}
+  .hero h1{font-size:32px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="loader-logo">M</div>
+  <div class="loader-title">Mr.<span>Tool</span></div>
+  <div class="loader-track"><div></div></div>
+  <div style="color:#a5aec9;font-size:12px">Preparing your workspace...</div>
+</div>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-icon">⚡</div>
+    <span class="brand-text">Mr.Tool</span>
+  </div>
+
+  <div class="side-label">WORKSPACE</div>
+
+  <button class="side-btn active" data-page="home">
+    <span class="nav-icon">⌂</span><span class="side-text">Home</span>
+  </button>
+
+  <button class="side-btn" data-page="tools">
+    <span class="nav-icon">▦</span><span class="side-text">All Tools</span>
+  </button>
+
+  <button class="side-btn" data-page="favorites">
+    <span class="nav-icon">☆</span><span class="side-text">Favorites</span>
+  </button>
+
+  <button class="side-btn" data-page="calculator">
+    <span class="nav-icon">🧮</span><span class="side-text">Calculator</span>
+  </button>
+
+  <div class="side-label">CATEGORIES</div>
+  <div id="sidebarCategories"></div>
+
+  <div class="side-label">INFORMATION</div>
+
+  <button class="side-btn" data-page="about">
+    <span class="nav-icon">ⓘ</span><span class="side-text">About the Author</span>
+  </button>
+
+  <button class="side-btn" id="sidebarSettings">
+    <span class="nav-icon">⚙</span><span class="side-text">Settings</span>
+  </button>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="icon-btn" id="menuBtn" title="Toggle sidebar">☰</button>
+      <div>
+        <strong id="pageTitle">Welcome to Mr.Tool</strong>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">
+          Your colorful digital toolbox
+        </div>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <span class="status-pill">● Ready to use</span>
+      <button class="icon-btn" id="themeBtn" title="Toggle light/dark theme">☼</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <!-- HOME PAGE -->
+  <section class="page active" id="page-home">
+
+    <div class="hero">
+      <div class="eyebrow">✦ YOUR EVERYDAY TOOLBOX</div>
+
+      <h1>Less busywork.<br><span class="gradient">More doing.</span></h1>
+
+      <p>
+        A colorful collection of tools for students, creators and developers.
+        Calculate, convert, create and get things done in one place.
+      </p>
+
+      <div class="searchbar">
+        <span>⌕</span>
+        <input id="homeSearch" placeholder="Search 150 tools...">
+        <button id="searchBtn">Search</button>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div>
+        <h2>Explore Categories</h2>
+        <p>Choose a category to find your tools.</p>
+      </div>
+    </div>
+
+    <div class="category-grid" id="categoryGrid"></div>
+
+    <div class="section-head">
+      <div>
+        <h2>Popular Tools</h2>
+        <p>Useful tools to get started.</p>
+      </div>
+      <button class="chip" data-goto="tools">View all tools →</button>
+    </div>
+
+    <div class="tool-grid" id="popularGrid"></div>
+
+  </section>
+
+  <!-- ALL TOOLS -->
+  <section class="page" id="page-tools">
+    <div class="section-head">
+      <div>
+        <h2>All Tools</h2>
+        <p id="toolCountText">Browse the toolbox.</p>
+      </div>
+    </div>
+
+    <div class="searchbar" style="margin:0 0 18px;max-width:none">
+      <span>⌕</span>
+      <input id="allSearch" placeholder="Search by tool name or category...">
+    </div>
+
+    <div class="filter-row" id="filterRow"></div>
+    <div class="tool-grid" id="allGrid"></div>
+    <div class="empty" id="allEmpty">No tools found. Try a different search.</div>
+  </section>
+
+  <!-- FAVORITES -->
+  <section class="page" id="page-favorites">
+    <div class="section-head">
+      <div>
+        <h2>☆ Your Favorites</h2>
+        <p>Your saved tools appear here.</p>
+      </div>
+    </div>
+    <div class="tool-grid" id="favoriteGrid"></div>
+    <div class="empty" id="favoriteEmpty">You haven't saved any favorites yet. Tap ☆ on a tool card.</div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section class="page" id="page-calculator">
+    <div class="section-head">
+      <div>
+        <h2>🧮 Calculator</h2>
+        <p>A working calculator with keyboard support.</p>
+      </div>
+    </div>
+
+    <div class="calculator">
+      <input class="calc-display" id="calcDisplay" value="0" readonly aria-label="Calculator display">
+
+      <div class="calc-grid">
+        <button class="calc-key clear" data-calc="AC">AC</button>
+        <button class="calc-key" data-calc="(">(</button>
+        <button class="calc-key" data-calc=")">)</button>
+        <button class="calc-key operator" data-calc="÷">÷</button>
+
+        <button class="calc-key" data-calc="7">7</button>
+        <button class="calc-key" data-calc="8">8</button>
+        <button class="calc-key" data-calc="9">9</button>
+        <button class="calc-key operator" data-calc="×">×</button>
+
+        <button class="calc-key" data-calc="4">4</button>
+        <button class="calc-key" data-calc="5">5</button>
+        <button class="calc-key" data-calc="6">6</button>
+        <button class="calc-key operator" data-calc="-">−</button>
+
+        <button class="calc-key" data-calc="1">1</button>
+        <button class="calc-key" data-calc="2">2</button>
+        <button class="calc-key" data-calc="3">3</button>
+        <button class="calc-key operator" data-calc="+">+</button>
+
+        <button class="calc-key zero" data-calc="0">0</button>
+        <button class="calc-key" data-calc=".">.</button>
+        <button class="calc-key" data-calc="DEL">⌫</button>
+        <button class="calc-key" data-calc="%">%</button>
+
+        <button class="calc-key" data-calc="sqrt">√</button>
+        <button class="calc-key" data-calc="square">x²</button>
+        <button class="calc-key" data-calc="sign">±</button>
+        <button class="calc-key equal" data-calc="=">=</button>
+      </div>
+
+      <p class="calc-hint">You can also use your keyboard. Enter calculates; Backspace deletes.</p>
+    </div>
+  </section>
+
+  <!-- ABOUT AUTHOR -->
+  <section class="page" id="page-about">
+    <div class="section-head">
+      <div>
+        <h2>About the Author</h2>
+        <p>About this project.</p>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <div class="author-icon">⚡</div>
+      <h1>Mr.Tool <span class="gradient">Premium</span></h1>
+      <p>
+        Mr.Tool is a mini-toolbox project designed to bring everyday utilities
+        into one convenient workspace. It combines a colorful interface,
+        quick search, customizable themes, favorites and practical browser-based tools.
+      </p>
+      <p>
+        <strong>Created by:</strong> Website Author
+      </p>
+      <p>
+        Replace “Website Author” with your preferred author name.
+        This website runs primarily in your browser. Some tools that require
+        external services or specialized file processing may need an internet connection.
+      </p>
+      <button class="action-btn" id="aboutToolsBtn">Explore the tools →</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>© 2026 Mr.Tool · Premium Toolbox</span>
+    <span>Made for everyday productivity ✦</span>
+  </footer>
+
+</main>
+</div>
+
+<!-- SETTINGS SIDEBAR -->
+<aside class="settings-panel" id="settingsPanel">
+  <div class="settings-head">
+    <h2>⚙ Settings</h2>
+    <button class="close" id="closeSettings">×</button>
+  </div>
+
+  <div class="setting-group">
+    <label>Choose a color theme</label>
+    <div class="theme-options">
+      <button class="theme-dot" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)" data-color="#8b5cf6" data-color2="#06b6d4" title="Purple and cyan"></button>
+      <button class="theme-dot" style="background:linear-gradient(135deg,#ec4899,#f97316)" data-color="#ec4899" data-color2="#f97316" title="Pink and orange"></button>
+      <button class="theme-dot" style="background:linear-gradient(135deg,#22c55e,#06b6d4)" data-color="#22c55e" data-color2="#06b6d4" title="Green and cyan"></button>
+      <button class="theme-dot" style="background:linear-gradient(135deg,#3b82f6,#a78bfa)" data-color="#3b82f6" data-color2="#a78bfa" title="Blue and violet"></button>
+      <button class="theme-dot" style="background:linear-gradient(135deg,#f59e0b,#ef4444)" data-color="#f59e0b" data-color2="#ef4444" title="Amber and red"></button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <label>Appearance</label>
+    <button class="action-btn" id="settingsThemeBtn">Toggle light / dark mode</button>
+  </div>
+
+  <div class="setting-group">
+    <label>Workspace</label>
+    <div class="switch-row">
+      <span>Animated interface</span>
+      <input type="checkbox" id="animationToggle" checked>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <label>About settings</label>
+    <p class="setting-note">
+      Your selected theme is applied immediately and saved locally in this browser.
+      Favorites are also saved locally on this device.
+    </p>
+  </div>
+</aside>
+
+<!-- TOOL MODAL -->
+<div class="overlay" id="toolOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <div id="modalIcon" style="font-size:27px">✦</div>
+        <div>
+          <h2 id="modalTitle">Tool</h2>
+          <p id="modalDescription">Use this tool below.</p>
+        </div>
+      </div>
+      <button class="close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ======================================================
+   MR.TOOL — 150 TOOL DIRECTORY
+   ====================================================== */
+
+const categoryData = [
+  {name:"Text Tools",icon:"📝",color:"#8b5cf6"},
+  {name:"Developer",icon:"💻",color:"#06b6d4"},
+  {name:"Calculators",icon:"🧮",color:"#f97316"},
+  {name:"Converters",icon:"🔄",color:"#22c55e"},
+  {name:"Student Tools",icon:"🎓",color:"#ec4899"},
+  {name:"Date & Time",icon:"⏰",color:"#eab308"},
+  {name:"Random Tools",icon:"🎲",color:"#f43f5e"},
+  {name:"Image Tools",icon:"🖼️",color:"#14b8a6"},
+  {name:"PDF & Files",icon:"📄",color:"#6366f1"},
+  {name:"Web & Security",icon:"🌐",color:"#a855f7"}
+];
+
+const toolNames = {
+"Text Tools":`
+Text Case Converter
+Word Counter
+Character Counter
+Line Counter
+Remove Extra Spaces
+Text Reverser
+Duplicate Line Remover
+Find and Replace
+Lorem Ipsum Generator
+Text to Binary
+Binary to Text
+Text Sorter
+Alphabetical Sorter
+Sentence Counter
+Text Cleaner`,
+
+"Developer":`
+JSON Formatter
+JSON Minifier
+Base64 Encoder
+Base64 Decoder
+URL Encoder
+URL Decoder
+HTML Entity Encoder
+HTML Entity Decoder
+Slug Generator
+UUID Generator
+HEX to RGB
+RGB to HEX
+CSS Gradient Generator
+HTML Preview
+JavaScript Escape Tool`,
+
+"Calculators":`
+Standard Calculator
+Scientific Calculator
+Percentage Calculator
+Discount Calculator
+GST Calculator
+Tip Calculator
+Bill Splitter
+Simple Interest Calculator
+Compound Interest Calculator
+Loan EMI Calculator
+Age Calculator
+Average Calculator
+Ratio Calculator
+Profit and Loss Calculator
+Number System Calculator`,
+
+"Converters":`
+Kilometers to Miles
+Miles to Kilometers
+Kilograms to Pounds
+Pounds to Kilograms
+Celsius to Fahrenheit
+Fahrenheit to Celsius
+Meters to Feet
+Feet to Meters
+Inches to Centimeters
+Centimeters to Inches
+Liters to Gallons
+Gallons to Liters
+Bytes to Kilobytes
+Kilobytes to Megabytes
+Hours to Minutes`,
+
+"Student Tools":`
+Grade Calculator
+SGPA Calculator
+CGPA Calculator
+Exam Percentage Calculator
+Study Timer
+Pomodoro Timer
+Flashcard Maker
+Random Study Topic
+Multiplication Table
+Prime Number Checker
+Factorial Calculator
+HCF Calculator
+LCM Calculator
+Quadratic Equation Solver
+Scientific Notation Converter`,
+
+"Date & Time":`
+Current Date and Time
+Date Difference Calculator
+Days Between Dates
+Add Days to Date
+Subtract Days from Date
+Countdown Timer
+Stopwatch
+Unix Timestamp Converter
+Timestamp to Date
+Date to Timestamp
+Week Number Finder
+Leap Year Checker
+Days in Month
+Time Zone Display
+Birthday Countdown`,
+
+"Random Tools":`
+Coin Flip
+Dice Roll
+Random Number Generator
+Random Password Generator
+Random Choice Picker
+Random Team Generator
+Lucky Number Generator
+Random Color Generator
+Random Hex Color
+Shuffle List
+Random Yes or No
+Random Letter
+Random Name Picker
+Random Number List
+Decision Picker`,
+
+"Image Tools":`
+Image Preview
+Image Dimensions
+Image to Data URL
+Data URL to Image
+Image Color Picker
+Image Background Preview
+Image Format Information
+Image File Size Checker
+Image Base64 Viewer
+Image Aspect Ratio
+Image Color Palette
+Image URL Preview
+Image Metadata Preview
+Image Placeholder Generator
+Image Resize Calculator`,
+
+"PDF & Files":`
+PDF Merge
+PDF Split
+PDF Page Counter
+PDF Watermark Guide
+PDF File Information
+Text File Reader
+Text File Download
+CSV Preview
+JSON File Preview
+File Size Converter
+File Extension Checker
+MIME Type Helper
+Markdown Preview
+Text to TXT File
+HTML File Download`,
+
+"Web & Security":`
+Password Strength Checker
+Secure Password Generator
+QR Code Generator
+URL Validator
+Email Validator
+IP Address Information
+HTML Escape Tool
+HTML Unescape Tool
+SHA-256 Hash Generator
+Text to URL Slug
+URL Query Parser
+User Agent Viewer
+Color Contrast Checker
+Meta Tag Generator
+Website Checklist`
+};
+
+const icons = {
+"Text Tools":"📝","Developer":"💻","Calculators":"🧮",
+"Converters":"🔄","Student Tools":"🎓","Date & Time":"⏰",
+"Random Tools":"🎲","Image Tools":"🖼️","PDF & Files":"📄",
+"Web & Security":"🌐"
+};
+
+const descriptions = {
+"Text Tools":"Work with and transform text.",
+"Developer":"Useful utilities for coding and web development.",
+"Calculators":"Calculate values quickly and accurately.",
+"Converters":"Convert between common units and formats.",
+"Student Tools":"Tools for study, assignments and mathematics.",
+"Date & Time":"Work with dates, time and timestamps.",
+"Random Tools":"Generate random results and make quick choices.",
+"Image Tools":"Inspect images and work with image information.",
+"PDF & Files":"Utilities for documents and file formats.",
+"Web & Security":"Helpful web, validation and security utilities."
+};
+
+const tools = [];
+let toolId = 0;
+
+for (const category of categoryData) {
+  const names = toolNames[category.name].trim().split("\n");
+
+  names.forEach(name => {
+    toolId++;
+    tools.push({
+      id:toolId,
+      name:name.trim(),
+      category:category.name,
+      icon:getToolIcon(name.trim(),category.icon),
+      color:category.color,
+      description:getDescription(name.trim(),category.name)
+    });
+  });
+}
+
+function getToolIcon(name, fallback) {
+  const map = {
+    "Standard Calculator":"🧮",
+    "Scientific Calculator":"📐",
+    "Coin Flip":"🪙",
+    "Dice Roll":"🎲",
+    "QR Code Generator":"▦",
+    "JSON Formatter":"{ }",
+    "Word Counter":"≡",
+    "Password Strength Checker":"🔐",
+    "Random Password Generator":"🔑",
+    "Secure Password Generator":"🔑",
+    "Percentage Calculator":"％",
+    "GST Calculator":"₹",
+    "SGPA Calculator":"🎓",
+    "CGPA Calculator":"🎓",
+    "Study Timer":"⏱️",
+    "Pomodoro Timer":"🍅",
+    "PDF Merge":"📚",
+    "PDF Split":"✂️",
+    "CSS Gradient Generator":"🌈",
+    "HEX to RGB":"🎨",
+    "RGB to HEX":"🎨",
+    "Stopwatch":"⏱️",
+    "Countdown Timer":"⏳",
+    "Age Calculator":"🎂",
+    "HTML Preview":"🌐",
+    "SHA-256 Hash Generator":"🔒"
+  };
+
+  return map[name] || fallback;
+}
+
+function getDescription(name,category) {
+  const special = {
+    "Standard Calculator":"Perform arithmetic calculations.",
+    "Scientific Calculator":"Calculate expressions with parentheses and powers.",
+    "Coin Flip":"Flip a coin with an animation.",
+    "Dice Roll":"Roll a six-sided die with an animation.",
+    "Word Counter":"Count words, characters and lines.",
+    "JSON Formatter":"Validate and format JSON.",
+    "HEX to RGB":"Convert a hex color into RGB.",
+    "RGB to HEX":"Convert RGB values into hexadecimal.",
+    "QR Code Generator":"Generate a QR code for text or a URL.",
+    "Percentage Calculator":"Calculate a percentage of a number.",
+    "Random Password Generator":"Generate a random password.",
+    "Password Strength Checker":"Check basic password characteristics.",
+    "Text to TXT File":"Download text as a TXT file.",
+    "HTML Preview":"Preview HTML in your browser."
+  };
+
+  return special[name] || descriptions[category] || "A useful everyday utility.";
+}
+
+/* EXACT TOOL COUNT CHECK */
+console.log("Mr.Tool tools:",tools.length); // 150
+
+/* ======================================================
+   ELEMENTS AND STATE
+   ====================================================== */
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+
+let activeCategory = "All Tools";
+let favorites = new Set(
+  JSON.parse(localStorage.getItem("mrtool-favorites") || "[]")
+);
+
+let showFavoritesOnly = false;
+
+function saveFavorites() {
+  localStorage.setItem(
+    "mrtool-favorites",
+    JSON.stringify([...favorites])
+  );
+}
+
+/* ======================================================
+   LOADING SCREEN
+   ====================================================== */
+
+window.addEventListener("load", () => {
+  setTimeout(() => $("#loader").classList.add("hide"),1800);
+});
+
+/* ======================================================
+   CATEGORY UI
+   ====================================================== */
+
+function renderCategories() {
+  $("#categoryGrid").innerHTML = categoryData.map(cat => {
+    const count = tools.filter(t => t.category === cat.name).length;
+
+    return `
+      <button class="category-card"
+        style="--cat:${cat.color}25"
+        data-category="${cat.name}">
+        <span class="cat-icon">${cat.icon}</span>
+        <strong>${cat.name}</strong>
+        <small>${count} tools</small>
+      </button>`;
+  }).join("");
+
+  $("#sidebarCategories").innerHTML = categoryData.map(cat => `
+    <button class="side-btn" data-category="${cat.name}">
+      <span class="nav-icon">${cat.icon}</span>
+      <span class="side-text">${cat.name}</span>
+    </button>
+  `).join("");
+
+  $("#filterRow").innerHTML = `
+    <button class="chip active" data-filter="All Tools">All Tools</button>
+    ${categoryData.map(cat =>
+      `<button class="chip" data-filter="${cat.name}">${cat.icon} ${cat.name}</button>`
+    ).join("")}
+  `;
+}
+
+/* ======================================================
+   TOOL CARDS
+   ====================================================== */
+
+function createToolCard(tool) {
+  const isFav = favorites.has(tool.id);
+
+  return `
+    <article class="tool-card"
+      style="--card-color:${tool.color}"
+      data-open-tool="${tool.id}"
+      tabindex="0"
+      role="button"
+      aria-label="Open ${tool.name}">
+
+      <button class="favorite ${isFav ? "on" : ""}"
+        data-favorite="${tool.id}"
+        aria-label="Toggle favorite"
+        title="Toggle favorite">${isFav ? "★" : "☆"}</button>
+
+      <div class="tool-icon">${tool.icon}</div>
+      <h3>${tool.name}</h3>
+      <p>${tool.description}</p>
+    </article>`;
+}
+
+function renderGrid(container,items) {
+  $(container).innerHTML = items.map(createToolCard).join("");
+}
+
+function renderPopular() {
+  const popularNames = [
+    "Standard Calculator",
+    "Word Counter",
+    "JSON Formatter",
+    "Coin Flip",
+    "Dice Roll",
+    "Percentage Calculator",
+    "Random Password Generator",
+    "QR Code Generator"
+  ];
+
+  const popular = popularNames
+    .map(name => tools.find(t => t.name === name))
+    .filter(Boolean);
+
+  renderGrid("#popularGrid",popular);
+}
+
+function renderAllTools() {
+  const search = ($("#allSearch").value || "").toLowerCase().trim();
+
+  const list = tools.filter(tool => {
+    const matchesSearch =
+      tool.name.toLowerCase().includes(search) ||
+      tool.category.toLowerCase().includes(search) ||
+      tool.description.toLowerCase().includes(search);
+
+    const matchesCategory =
+      activeCategory === "All Tools" ||
+      tool.category === activeCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  renderGrid("#allGrid",list);
+
+  $("#allEmpty").style.display = list.length ? "none" : "block";
+  $("#toolCountText").textContent =
+    `${list.length} of ${tools.length} tools shown`;
+}
+
+function renderFavorites() {
+  const list = tools.filter(t => favorites.has(t.id));
+  renderGrid("#favoriteGrid",list);
+
+  $("#favoriteEmpty").style.display = list.length ? "none" : "block";
+}
+
+/* ======================================================
+   PAGE NAVIGATION
+   ====================================================== */
+
+function showPage(page) {
+  $$(".page").forEach(p => p.classList.remove("active"));
+
+  const target = $("#page-" + page);
+  if (target) target.classList.add("active");
+
+  $$(".side-btn[data-page]").forEach(btn => {
+    btn.classList.toggle("active",btn.dataset.page === page);
+  });
+
+  const titles = {
+    home:"Welcome to Mr.Tool",
+    tools:"All 150 Tools",
+    favorites:"Your Favorites",
+    calculator:"Calculator",
+    about:"About the Author"
+  };
+
+  $("#pageTitle").textContent = titles[page] || page;
+
+  $("#sidebar").classList.remove("mobile-open");
+
+  if (page === "favorites") renderFavorites();
+  if (page === "tools") renderAllTools();
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$$(".side-btn[data-page]").forEach(btn => {
+  btn.addEventListener("click",() => showPage(btn.dataset.page));
+});
+
+$("#aboutToolsBtn").addEventListener("click",() => showPage("tools"));
+
+$$("[data-goto]").forEach(btn => {
+  btn.addEventListener("click",() => showPage(btn.dataset.goto));
+});
+
+$("#menuBtn").addEventListener("click",() => {
+  const sidebar = $("#sidebar");
+
+  if (window.innerWidth <= 800) {
+    sidebar.classList.toggle("mobile-open");
+  } else {
+    sidebar.classList.toggle("collapsed");
+  }
+});
+
+/* ======================================================
+   CATEGORY FILTERING
+   ====================================================== */
+
+function openCategory(category) {
+  activeCategory = category;
+  showPage("tools");
+
+  $$(".chip[data-filter]").forEach(chip => {
+    chip.classList.toggle("active",chip.dataset.filter === category);
+  });
+
+  renderAllTools();
+}
+
+document.addEventListener("click",event => {
+  const categoryCard = event.target.closest("[data-category]");
+  if (categoryCard) openCategory(categoryCard.dataset.category);
+
+  const filter = event.target.closest("[data-filter]");
+  if (filter) {
+    activeCategory = filter.dataset.filter;
+
+    $$(".chip[data-filter]").forEach(chip => {
+      chip.classList.toggle("active",chip === filter);
+    });
+
+    renderAllTools();
+  }
+});
+
+/* ======================================================
+   FAVORITES
+   ====================================================== */
+
+document.addEventListener("click",event => {
+  const button = event.target.closest("[data-favorite]");
+  if (!button) return;
+
+  event.stopPropagation();
+
+  const id = Number(button.dataset.favorite);
+
+  if (favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
+
+  saveFavorites();
+  renderPopular();
+  renderAllTools();
+  renderFavorites();
+});
+
+/* ======================================================
+   SEARCH
+   ====================================================== */
+
+$("#allSearch").addEventListener("input",renderAllTools);
+
+function searchFromHome() {
+  $("#allSearch").value = $("#homeSearch").value;
+  activeCategory = "All Tools";
+
+  $$(".chip[data-filter]").forEach(chip => {
+    chip.classList.toggle("active",chip.dataset.filter === "All Tools");
+  });
+
+  showPage("tools");
+  renderAllTools();
+}
+
+$("#searchBtn").addEventListener("click",searchFromHome);
+
+$("#homeSearch").addEventListener("keydown",event => {
+  if (event.key === "Enter") searchFromHome();
+});
+
+document.addEventListener("keydown",event => {
+  if (event.key === "/" &&
+      !["INPUT","TEXTAREA"].includes(document.activeElement.tagName)) {
+    event.preventDefault();
+    $("#homeSearch").focus();
+  }
+});
+
+/* ======================================================
+   SETTINGS AND THEMES
+   ====================================================== */
+
+function setTheme(color,color2) {
+  document.documentElement.style.setProperty("--accent",color);
+  document.documentElement.style.setProperty("--accent2",color2);
+
+  localStorage.setItem("mrtool-color",color);
+  localStorage.setItem("mrtool-color2",color2);
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("light");
+
+  localStorage.setItem(
+    "mrtool-light",
+    document.body.classList.contains("light") ? "1" : "0"
+  );
+}
+
+const savedColor = localStorage.getItem("mrtool-color");
+const savedColor2 = localStorage.getItem("mrtool-color2");
+
+if (savedColor && savedColor2) setTheme(savedColor,savedColor2);
+
+if (localStorage.getItem("mrtool-light") === "1") {
+  document.body.classList.add("light");
+}
+
+$("#themeBtn").addEventListener("click",toggleTheme);
+$("#settingsThemeBtn").addEventListener("click",toggleTheme);
+
+const settingsPanel = $("#settingsPanel");
+
+function openSettings() {
+  settingsPanel.classList.add("open");
+}
+
+function closeSettings() {
+  settingsPanel.classList.remove("open");
+}
+
+$("#settingsBtn").addEventListener("click",openSettings);
+$("#sidebarSettings").addEventListener("click",openSettings);
+$("#closeSettings").addEventListener("click",closeSettings);
+
+$$(".theme-dot").forEach(button => {
+  button.addEventListener("click",() => {
+    setTheme(button.dataset.color,button.dataset.color2);
+  });
+});
+
+$("#animationToggle").addEventListener("change",event => {
+  document.body.classList.toggle("no-animation",!event.target.checked);
+
+  if (!event.target.checked) {
+    document.querySelectorAll("*").forEach(el => {
+      el.style.animation = "none";
+      el.style.transition = "none";
+    });
+  } else {
+    document.querySelectorAll("*").forEach(el => {
+      el.style.removeProperty("animation");
+      el.style.removeProperty("transition");
+    });
+  }
+});
+
+/* ======================================================
+   TOOL MODAL
+   ====================================================== */
+
+function openTool(id) {
+  const tool = tools.find(t => t.id === Number(id));
+  if (!tool) return;
+
+  $("#modalTitle").textContent = tool.name;
+  $("#modalIcon").textContent = tool.icon;
+  $("#modalDescription").textContent = tool.description;
+  $("#modalBody").innerHTML = getToolInterface(tool);
+
+  $("#toolOverlay").classList.add("open");
+
+  setupTool(tool);
+}
+
+function closeTool() {
+  $("#toolOverlay").classList.remove("open");
+}
+
+$("#modalClose").addEventListener("click",closeTool);
+
+$("#toolOverlay").addEventListener("click",event => {
+  if (event.target === $("#toolOverlay")) closeTool();
+});
+
+document.addEventListener("keydown",event => {
+  if (event.key === "Escape") {
+    closeTool();
+    closeSettings();
+  }
+});
+
+document.addEventListener("click",event => {
+  const card = event.target.closest("[data-open-tool]");
+
+  if (card && !event.target.closest("[data-favorite]")) {
+    openTool(card.dataset.openTool);
+  }
+});
+
+document.addEventListener("keydown",event => {
+  const card = event.target.closest("[data-open-tool]");
+
+  if (card && (event.key === "Enter" || event.key === " ")) {
+    if (event.target.closest("button")) return;
+    event.preventDefault();
+    openTool(card.dataset.openTool);
+  }
+});
+
+/* ======================================================
+   TOOL INTERFACES
+   ====================================================== */
+
+function field(label,id,placeholder="",type="text") {
+  return `
+    <label class="field-label" for="${id}">${label}</label>
+    <input class="field" id="${id}" type="${type}"
+      placeholder="${placeholder}">
+  `;
+}
+
+function textarea(label,id,placeholder="Enter text here...") {
+  return `
+    <label class="field-label" for="${id}">${label}</label>
+    <textarea class="field" id="${id}" placeholder="${placeholder}"></textarea>
+  `;
+}
+
+function resultBox(id="result") {
+  return `<div class="result-box" id="${id}" aria-live="polite">Your result will appear here.</div>`;
+}
+
+function action(label="Run Tool",id="runTool") {
+  return `<button class="action-btn" id="${id}">${label}</button>`;
+}
+
+function getToolInterface(tool) {
+  const name = tool.name;
+
+  if (name === "Standard Calculator" || name === "Scientific Calculator") {
+    return `
+      <p>Use the full calculator for arithmetic and scientific expressions.</p>
+      ${action("Open Calculator","openCalculator")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Coin Flip") {
+    return `
+      <div class="random-stage">
+        <div class="coin" id="coin">FLIP</div>
+      </div>
+      ${action("🪙 Flip Coin","flipCoin")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Dice Roll") {
+    return `
+      <div class="random-stage">
+        <div class="dice" id="dice">⚀</div>
+      </div>
+      ${action("🎲 Roll Dice","rollDice")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name.includes("Password Generator")) {
+    return `
+      ${field("Password length","passLength","16","number")}
+      <label class="switch-row">
+        <span>Include numbers and symbols</span>
+        <input type="checkbox" id="passSymbols" checked>
+      </label>
+      ${action("Generate Password")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Word Counter" || name === "Character Counter" ||
+      name === "Line Counter" || name === "Sentence Counter") {
+    return `
+      ${textarea("Enter your text","inputText")}
+      ${action("Count")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Text Case Converter") {
+    return `
+      ${textarea("Input text","inputText")}
+      <label class="field-label">Conversion</label>
+      <select class="field" id="caseType">
+        <option value="upper">UPPERCASE</option>
+        <option value="lower">lowercase</option>
+        <option value="title">Title Case</option>
+        <option value="sentence">Sentence case</option>
+      </select>
+      ${action("Convert")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "JSON Formatter" || name === "JSON Minifier") {
+    return `
+      ${textarea("JSON input","inputText",'{"name":"Mr.Tool","ready":true}')}
+      ${action(name === "JSON Formatter" ? "Format JSON" : "Minify JSON")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "HEX to RGB" || name === "RGB to HEX") {
+    return name === "HEX to RGB" ? `
+      ${field("Hex color","hexInput","#8b5cf6")}
+      ${action("Convert")}
+      ${resultBox()}
+    ` : `
+      ${field("Red (0–255)","redInput","139","number")}
+      ${field("Green (0–255)","greenInput","92","number")}
+      ${field("Blue (0–255)","blueInput","246","number")}
+      ${action("Convert")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Percentage Calculator") {
+    return `
+      ${field("Percentage (%)","percentValue","20","number")}
+      ${field("Number","baseValue","250","number")}
+      ${action("Calculate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Discount Calculator") {
+    return `
+      ${field("Original price","originalPrice","1000","number")}
+      ${field("Discount (%)","discountValue","15","number")}
+      ${action("Calculate Discount")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "GST Calculator") {
+    return `
+      ${field("Amount","gstAmount","1000","number")}
+      ${field("GST rate (%)","gstRate","18","number")}
+      ${action("Calculate GST")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Celsius to Fahrenheit" ||
+      name === "Fahrenheit to Celsius" ||
+      name === "Kilometers to Miles" ||
+      name === "Miles to Kilometers" ||
+      name === "Kilograms to Pounds" ||
+      name === "Pounds to Kilograms" ||
+      name === "Meters to Feet" ||
+      name === "Feet to Meters" ||
+      name === "Inches to Centimeters" ||
+      name === "Centimeters to Inches" ||
+      name === "Liters to Gallons" ||
+      name === "Gallons to Liters" ||
+      name === "Hours to Minutes" ||
+      name === "Bytes to Kilobytes" ||
+      name === "Kilobytes to Megabytes") {
+    return `
+      ${field("Value to convert","convertValue","100","number")}
+      ${action("Convert")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Random Number Generator" ||
+      name === "Random Number List") {
+    return `
+      ${field("Minimum","randomMin","1","number")}
+      ${field("Maximum","randomMax","100","number")}
+      ${name === "Random Number List" ? field("How many numbers?","randomCount","10","number") : ""}
+      ${action("Generate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Random Color Generator" || name === "Random Hex Color") {
+    return `
+      <div class="random-stage">
+        <div id="colorPreview" style="width:125px;height:100px;border-radius:18px;background:#8b5cf6;border:1px solid #ffffff22"></div>
+      </div>
+      ${action("Generate Color")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Age Calculator") {
+    return `
+      ${field("Date of birth","birthDate","","date")}
+      ${action("Calculate Age")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "QR Code Generator") {
+    return `
+      ${field("Text or URL","qrText","https://example.com")}
+      ${action("Generate QR Code")}
+      ${resultBox()}
+      <p class="setting-note">QR creation uses an external image service and requires internet access.</p>
+    `;
+  }
+
+  if (name === "URL Validator" || name === "Email Validator") {
+    return `
+      ${field("Value to validate","validateInput","Enter value")}
+      ${action("Validate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "URL Encoder" || name === "URL Decoder" ||
+      name === "Base64 Encoder" || name === "Base64 Decoder" ||
+      name === "HTML Entity Encoder" || name === "HTML Entity Decoder" ||
+      name === "Text to Binary" || name === "Binary to Text" ||
+      name === "Text to URL Slug" || name === "Slug Generator" ||
+      name === "Text Reverser" || name === "Text Sorter" ||
+      name === "Alphabetical Sorter" || name === "Remove Extra Spaces" ||
+      name === "Duplicate Line Remover" || name === "Find and Replace" ||
+      name === "HTML Escape Tool" || name === "HTML Unescape Tool") {
+    return `
+      ${textarea("Input","inputText")}
+      ${name === "Find and Replace" ? field("Find","findText","Text to find") : ""}
+      ${name === "Find and Replace" ? field("Replace with","replaceText","Replacement text") : ""}
+      ${action("Process Text")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Simple Interest Calculator") {
+    return `
+      ${field("Principal amount","principal","10000","number")}
+      ${field("Annual interest rate (%)","interestRate","5","number")}
+      ${field("Time in years","interestTime","2","number")}
+      ${action("Calculate Interest")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Compound Interest Calculator") {
+    return `
+      ${field("Principal amount","principal","10000","number")}
+      ${field("Annual interest rate (%)","interestRate","5","number")}
+      ${field("Time in years","interestTime","2","number")}
+      ${field("Compounds per year","compoundCount","12","number")}
+      ${action("Calculate Compound Interest")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Grade Calculator" ||
+      name === "Exam Percentage Calculator" ||
+      name === "Average Calculator") {
+    return `
+      ${field("Marks or values (comma-separated)","marksInput","80,75,90")}
+      ${action("Calculate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Prime Number Checker" || name === "Factorial Calculator" ||
+      name === "Multiplication Table" || name === "HCF Calculator" ||
+      name === "LCM Calculator") {
+    return `
+      ${field("First number","numberA","12","number")}
+      ${name === "HCF Calculator" || name === "LCM Calculator"
+        ? field("Second number","numberB","18","number") : ""}
+      ${action("Calculate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Lorem Ipsum Generator") {
+    return `
+      ${field("Number of paragraphs","paragraphCount","3","number")}
+      ${action("Generate Text")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Countdown Timer" || name === "Pomodoro Timer" ||
+      name === "Study Timer") {
+    return `
+      ${field("Duration in minutes","timerMinutes","25","number")}
+      <div class="random-stage">
+        <div id="timerDisplay" style="font-size:40px;font-weight:900">25:00</div>
+      </div>
+      ${action("Start Timer","startTimer")}
+      <button class="action-btn secondary" id="stopTimer">Stop</button>
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Stopwatch") {
+    return `
+      <div class="random-stage">
+        <div id="stopwatchDisplay" style="font-size:40px;font-weight:900">00:00.0</div>
+      </div>
+      ${action("Start","startStopwatch")}
+      <button class="action-btn secondary" id="stopStopwatch">Stop</button>
+      <button class="action-btn secondary" id="resetStopwatch">Reset</button>
+    `;
+  }
+
+  if (name === "Date Difference Calculator" || name === "Days Between Dates") {
+    return `
+      ${field("Start date","dateStart","","date")}
+      ${field("End date","dateEnd","","date")}
+      ${action("Calculate Difference")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Image Preview") {
+    return `
+      ${field("Choose an image","imageFile","","file")}
+      <div id="imagePreviewArea" class="result-box">Your image preview will appear here.</div>
+    `;
+  }
+
+  if (name === "Text to TXT File") {
+    return `
+      ${textarea("Text to save","inputText")}
+      ${action("Download TXT File")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "HTML Preview") {
+    return `
+      ${textarea("HTML code","htmlCode","<h1>Hello, Mr.Tool!</h1>")}
+      ${action("Preview HTML")}
+      <iframe id="htmlPreviewFrame" title="HTML preview"
+        sandbox="" style="width:100%;height:220px;background:white;border:0;border-radius:12px;margin-top:12px"></iframe>
+    `;
+  }
+
+  if (name === "CSS Gradient Generator") {
+    return `
+      ${field("First color","gradientColor1","#8b5cf6")}
+      ${field("Second color","gradientColor2","#06b6d4")}
+      <label class="field-label">Direction</label>
+      <select class="field" id="gradientDirection">
+        <option value="to right">Left to right</option>
+        <option value="to bottom">Top to bottom</option>
+        <option value="135deg">Diagonal</option>
+        <option value="to left">Right to left</option>
+      </select>
+      <div id="gradientPreview" style="height:100px;border-radius:15px;background:linear-gradient(to right,#8b5cf6,#06b6d4)"></div>
+      ${action("Generate CSS")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Image Dimensions" || name === "Image Aspect Ratio" ||
+      name === "Image Resize Calculator") {
+    return `
+      ${field("Width (pixels)","imageWidth","1920","number")}
+      ${field("Height (pixels)","imageHeight","1080","number")}
+      ${action("Calculate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Color Contrast Checker") {
+    return `
+      ${field("Foreground hex color","foregroundColor","#ffffff")}
+      ${field("Background hex color","backgroundColor","#111827")}
+      ${action("Check Contrast")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Random Choice Picker" || name === "Random Team Generator" ||
+      name === "Shuffle List" || name === "Random Name Picker" ||
+      name === "Decision Picker" || name === "Random Study Topic") {
+    return `
+      ${textarea("Enter choices, one per line","choicesInput","Math\\nScience\\nProgramming")}
+      ${action("Choose Randomly")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Random Yes or No" || name === "Lucky Number Generator" ||
+      name === "Random Letter") {
+    return `
+      ${action("Generate")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Password Strength Checker") {
+    return `
+      ${field("Enter a password to check","passwordToCheck","Password")}
+      ${action("Check Strength")}
+      ${resultBox()}
+      <p class="setting-note">This basic check runs locally. Do not enter a password you actually use.</p>
+    `;
+  }
+
+  if (name === "URL Query Parser") {
+    return `
+      ${field("URL","queryUrl","https://example.com/?name=Alex")}
+      ${action("Parse URL")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Meta Tag Generator") {
+    return `
+      ${field("Page title","metaTitle","My Website")}
+      ${field("Description","metaDescription","A short website description")}
+      ${action("Generate Meta Tags")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "File Size Converter") {
+    return `
+      ${field("Bytes","fileBytes","1048576","number")}
+      ${action("Convert")}
+      ${resultBox()}
+    `;
+  }
+
+  if (name === "Image to Data URL" || name === "Image Base64 Viewer") {
+    return `
+      ${field("Choose an image","imageFile","","file")}
+      ${resultBox()}
+      <p class="setting-note">Large images can create large output strings.</p>
+    `;
+  }
+
+  if (name === "QR Code Generator") {
+    return `${field("Text or URL","qrText","https://example.com")}${action("Generate QR Code")}${resultBox()}`;
+  }
+
+  if (name === "PDF Merge" || name === "PDF Split" ||
+      name === "PDF Page Counter" || name === "PDF Watermark Guide" ||
+      name === "PDF File Information") {
+    return `
+      <h3>PDF utility</h3>
+      <p style="color:var(--muted);line-height:1.7">
+        This tool needs a PDF processing library to perform the requested operation.
+        The basic file input below lets you select a PDF for inspection.
+      </p>
+      ${field("Choose PDF file","pdfFile","","file")}
+      ${resultBox()}
+      <p class="setting-note">
+        PDF merge, split and watermark editing are not implemented by this basic demo.
+        Add a PDF library and implement each operation before using these features for real files.
+      </p>
+    `;
+  }
+
+  if (name === "CSV Preview" || name === "JSON File Preview" ||
+      name === "Text File Reader" || name === "File Extension Checker" ||
+      name === "MIME Type Helper" || name === "Image File Size Checker") {
+    return `
+      ${field("Choose a file","genericFile","","file")}
+      ${resultBox()}
+    `;
+  }
+
+  return `
+    <p style="color:var(--muted);line-height:1.7">
+      <strong>${tool.name}</strong><br>
+      ${tool.description}
+    </p>
+    ${textarea("Input","inputText","Enter a value or text...")}
+    ${action("Run Tool")}
+    ${resultBox()}
+    <p class="setting-note">
+      This tool is included in the 150-tool directory. Its specialized processing
+      may require an additional implementation.
+    </p>
+  `;
+}
+
+/* ======================================================
+   TOOL FUNCTIONALITY
+   ====================================================== */
+
+let runningTimer = null;
+let stopwatchInterval = null;
+let stopwatchStart = 0;
+let stopwatchElapsed = 0;
+
+function setupTool(tool) {
+  const name = tool.name;
+  const body = $("#modalBody");
+
+  const run = $("#runTool");
+
+  if (run) {
+    run.addEventListener("click",() => {
+      const input = $("#inputText")?.value ?? "";
+      const result = $("#result");
+
+      try {
+        let output = "";
+
+        if (name === "Word Counter") {
+          output = `Words: ${countWords(input)}
+Characters: ${input.length}
+Characters without spaces: ${input.replace(/\s/g,"").length}
+Lines: ${input ? input.split(/\r?\n/).length : 0}`;
+        }
+
+        else if (name === "Character Counter") {
+          output = `Characters: ${input.length}
+Characters without spaces: ${input.replace(/\s/g,"").length}`;
+        }
+
+        else if (name === "Line Counter") {
+          output = `Lines: ${input ? input.split(/\r?\n/).length : 0}`;
+        }
+
+        else if (name === "Sentence Counter") {
+          output = `Sentences: ${input.trim() ? input.split(/[.!?]+/).filter(x => x.trim()).length : 0}`;
+        }
+
+        else if (name === "Text Case Converter") {
+          const type = $("#caseType").value;
+
+          if (type === "upper") output = input.toUpperCase();
+          if (type === "lower") output = input.toLowerCase();
+
+          if (type === "title") {
+            output = input.toLowerCase().replace(/\b\w/g,c => c.toUpperCase());
+          }
+
+          if (type === "sentence") {
+            output = input.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g,c => c.toUpperCase());
+          }
+        }
+
+        else if (name === "JSON Formatter" || name === "JSON Minifier") {
+          const parsed = JSON.parse(input);
+          output = name === "JSON Formatter"
+            ? JSON.stringify(parsed,null,2)
+            : JSON.stringify(parsed);
+        }
+
+        else if (name === "Percentage Calculator") {
+          const percentage = numberValue("percentValue");
+          const value = numberValue("baseValue");
+          output = `${percentage}% of ${value} = ${percentage * value / 100}`;
+        }
+
+        else if (name === "Discount Calculator") {
+          const price = numberValue("originalPrice");
+          const discount = numberValue("discountValue");
+          const saved = price * discount / 100;
+          output = `Original price: ${formatNumber(price)}
+Discount: ${formatNumber(saved)}
+Final price: ${formatNumber(price-saved)}`;
+        }
+
+        else if (name === "GST Calculator") {
+          const amount = numberValue("gstAmount");
+          const rate = numberValue("gstRate");
+          const gst = amount * rate / 100;
+          output = `Amount: ${formatNumber(amount)}
+GST (${rate}%): ${formatNumber(gst)}
+Total: ${formatNumber(amount+gst)}`;
+        }
+
+        else if (name === "URL Encoder") output = encodeURIComponent(input);
+        else if (name === "URL Decoder") output = decodeURIComponent(input);
+
+        else if (name === "Base64 Encoder") {
+          output = btoa(unescape(encodeURIComponent(input)));
+        }
+
+        else if (name === "Base64 Decoder") {
+          output = decodeURIComponent(escape(atob(input.trim())));
+        }
+
+        else if (name === "HTML Entity Encoder" || name === "HTML Escape Tool") {
+          output = escapeHTML(input);
+        }
+
+        else if (name === "HTML Entity Decoder" || name === "HTML Unescape Tool") {
+          output = unescapeHTML(input);
+        }
+
+        else if (name === "Text to Binary") {
+          output = [...new TextEncoder().encode(input)]
+            .map(n => n.toString(2).padStart(8,"0")).join(" ");
+        }
+
+        else if (name === "Binary to Text") {
+          output = input.trim().split(/\s+/)
+            .map(n => String.fromCharCode(parseInt(n,2))).join("");
+        }
+
+        else if (name === "Text Reverser") {
+          output = [...input].reverse().join("");
+        }
+
+        else if (name === "Remove Extra Spaces") {
+          output = input.replace(/[ \t]+/g," ").replace(/\n{3,}/g,"\n\n").trim();
+        }
+
+        else if (name === "Duplicate Line Remover") {
+          output = [...new Set(input.split(/\r?\n/))].join("\n");
+        }
+
+        else if (name === "Text Sorter" || name === "Alphabetical Sorter") {
+          output = input.split(/\r?\n/).sort((a,b) => a.localeCompare(b)).join("\n");
+        }
+
+        else if (name === "Find and Replace") {
+          const find = $("#findText").value;
+          const replacement = $("#replaceText").value;
+
+          if (!find) throw new Error("Enter text to find.");
+
+          output = input.split(find).join(replacement);
+        }
+
+        else if (name === "Text to URL Slug" || name === "Slug Generator") {
+          output = input.toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g,"")
+            .replace(/[^a-z0-9]+/g,"-")
+            .replace(/^-|-$/g,"");
+        }
+
+        else if (name === "Lorem Ipsum Generator") {
+          const count = Math.max(1,Math.min(20,Number($("#paragraphCount").value)||1));
+          const paragraph = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+          output = Array(count).fill(paragraph).join("\n\n");
+        }
+
+        else if (name === "Simple Interest Calculator") {
+          const p = numberValue("principal");
+          const r = numberValue("interestRate");
+          const t = numberValue("interestTime");
+          const interest = p*r*t/100;
+          output = `Simple interest: ${formatNumber(interest)}
+Total amount: ${formatNumber(p+interest)}`;
+        }
+
+        else if (name === "Compound Interest Calculator") {
+          const p = numberValue("principal");
+          const r = numberValue("interestRate")/100;
+          const t = numberValue("interestTime");
+          const n = Math.max(1,numberValue("compoundCount"));
+          const total = p*Math.pow(1+r/n,n*t);
+          output = `Final amount: ${formatNumber(total)}
+Compound interest: ${formatNumber(total-p)}`;
+        }
+
+        else if (name === "Grade Calculator" ||
+                 name === "Exam Percentage Calculator" ||
+                 name === "Average Calculator") {
+          const values = $("#marksInput").value.split(",")
+            .map(v => Number(v.trim()))
+            .filter(v => Number.isFinite(v));
+
+          if (!values.length) throw new Error("Enter comma-separated numbers.");
+
+          const sum = values.reduce((a,b) => a+b,0);
+          const average = sum/values.length;
+
+          output = `Count: ${values.length}
+Total: ${formatNumber(sum)}
+Average: ${formatNumber(average)}`;
+
+          if (name === "Exam Percentage Calculator") {
+            output += `\nPercentage (if values are marks out of 100): ${formatNumber(average)}%`;
+          }
+        }
+
+        else if (name === "Prime Number Checker") {
+          const n = Math.floor(numberValue("numberA"));
+          output = n < 2 ? `${n} is not prime.` :
+            `${n} is ${isPrime(n) ? "prime" : "not prime"}.`;
+        }
+
+        else if (name === "Factorial Calculator") {
+          const n = Math.floor(numberValue("numberA"));
+          if (n < 0 || n > 170) throw new Error("Enter a number from 0 to 170.");
+          let value = 1;
+          for (let i=2;i<=n;i++) value *= i;
+          output = `${n}! = ${value}`;
+        }
+
+        else if (name === "Multiplication Table") {
+          const n = numberValue("numberA");
+          output = Array.from({length:10},(_,i) =>
+            `${n} × ${i+1} = ${n*(i+1)}`).join("\n");
+        }
+
+        else if (name === "HCF Calculator" || name === "LCM Calculator") {
+          const a = Math.abs(Math.trunc(numberValue("numberA")));
+          const b = Math.abs(Math.trunc(numberValue("numberB")));
+          const hcf = gcd(a,b);
+          const lcm = hcf ? (a/hcf)*b : 0;
+          output = name === "HCF Calculator" ? `HCF = ${hcf}` : `LCM = ${lcm}`;
+        }
+
+        else if (name === "Image Dimensions" ||
+                 name === "Image Aspect Ratio" ||
+                 name === "Image Resize Calculator") {
+          const w = numberValue("imageWidth");
+          const h = numberValue("imageHeight");
+          if (w <= 0 || h <= 0) throw new Error("Width and height must be positive.");
+
+          output = `Width: ${w}px
+Height: ${h}px
+Aspect ratio: ${simplifyRatio(w,h)}
+Pixels: ${(w*h).toLocaleString()}`;
+        }
+
+        else if (name === "Color Contrast Checker") {
+          const a = hexToRGB($("#foregroundColor").value);
+          const b = hexToRGB($("#backgroundColor").value);
+
+          const contrast = (Math.max(luminance(a),luminance(b))+.05) /
+            (Math.min(luminance(a),luminance(b))+.05);
+
+          output = `Contrast ratio: ${contrast.toFixed(2)}:1
+WCAG AA normal text: ${contrast >= 4.5 ? "Pass" : "Does not pass"}
+WCAG AAA normal text: ${contrast >= 7 ? "Pass" : "Does not pass"}`;
+        }
+
+        else if (name === "File Size Converter") {
+          const bytes = numberValue("fileBytes");
+          output = `${bytes} bytes
+${(bytes/1024).toFixed(3)} KB
+${(bytes/1048576).toFixed(3)} MB
+${(bytes/1073741824).toFixed(6)} GB`;
+        }
+
+        else if (name === "URL Validator") {
+          const url = new URL($("#validateInput").value);
+          output = `Valid URL
+Protocol: ${url.protocol}
+Host: ${url.host}`;
+        }
+
+        else if (name === "Email Validator") {
+          const email = $("#validateInput").value.trim();
+          output = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+            ? "The email has a basic valid format."
+            : "The email format appears invalid.";
+        }
+
+        else if (name === "Password Strength Checker") {
+          const p = $("#passwordToCheck").value;
+          const score = [
+            p.length >= 12,
+            /[a-z]/.test(p),
+            /[A-Z]/.test(p),
+            /\d/.test(p),
+            /[^a-zA-Z0-9]/.test(p)
+          ].filter(Boolean).length;
+
+          output = `Length: ${p.length}
+Basic strength: ${["Very weak","Weak","Fair","Good","Strong","Very strong"][score]}`;
+
+        }
+
+        else if (name === "URL Query Parser") {
+          const url = new URL($("#queryUrl").value);
+          output = [...url.searchParams.entries()]
+            .map(([key,value]) => `${key} = ${value}`).join("\n") || "No query parameters found.";
+        }
+
+        else if (name === "Meta Tag Generator") {
+          const title = escapeHTML($("#metaTitle").value);
+          const desc = escapeHTML($("#metaDescription").value);
+          output = `<title>${title}</title>\n<meta name="description" content="${desc}">`;
+        }
+
+        else {
+          output = "This tool is listed in the directory, but its specialized processing still needs to be implemented.";
+        }
+
+        result.textContent = output;
+        result.classList.remove("error");
+        result.classList.add("success");
+
+      } catch(error) {
+        result.textContent = "Error: " + error.message;
+        result.classList.add("error");
+        result.classList.remove("success");
+      }
+    });
+  }
+
+  if (name === "HEX to RGB") {
+    $("#runTool").addEventListener("click",() => {
+      try {
+        const rgb = hexToRGB($("#hexInput").value);
+        $("#result").textContent = `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      } catch(e) {
+        $("#result").textContent = "Enter a valid hex color, e.g. #8b5cf6.";
+      }
+    });
+  }
+
+  if (name === "RGB to HEX") {
+    $("#runTool").addEventListener("click",() => {
+      const values = [
+        numberValue("redInput"),
+        numberValue("greenInput"),
+        numberValue("blueInput")
+      ];
+
+      if (values.some(v => v<0 || v>255)) {
+        $("#result").textContent = "RGB values must be from 0 to 255.";
+        return;
+      }
+
+      $("#result").textContent = "#" + values
+        .map(v => Math.round(v).toString(16).padStart(2,"0"))
+        .join("");
+    });
+  }
+
+  if (name === "Coin Flip") {
+    $("#flipCoin").addEventListener("click",() => {
+      const coin = $("#coin");
+      coin.classList.remove("flip");
+      void coin.offsetWidth;
+      coin.classList.add("flip");
+
+      const result = Math.random() < .5 ? "Heads" : "Tails";
+
+      setTimeout(() => {
+        coin.textContent = result.toUpperCase();
+        $("#result").textContent = "Result: " + result;
+      },850);
+    });
+  }
+
+  if (name === "Dice Roll") {
+    $("#rollDice").addEventListener("click",() => {
+      const dice = $("#dice");
+      const faces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+      const result = Math.floor(Math.random()*6)+1;
+
+      dice.classList.remove("roll");
+      void dice.offsetWidth;
+      dice.classList.add("roll");
+
+      setTimeout(() => {
+        dice.textContent = faces[result-1];
+        $("#result").textContent = `You rolled ${result}.`;
+      },750);
+    });
+  }
+
+  if (name.includes("Password Generator")) {
+    $("#runTool").addEventListener("click",() => {
+      const length = Math.max(4,Math.min(128,Number($("#passLength").value)||16));
+      const symbols = $("#passSymbols").checked;
+      const chars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789" +
+        (symbols ? "!@#$%^&*()-_=+?" : "");
+
+      let output = "";
+
+      if (crypto.getRandomValues) {
+        const bytes = new Uint8Array(length);
+        crypto.getRandomValues(bytes);
+        for (const b of bytes) output += chars[b % chars.length];
+      } else {
+        for (let i=0;i<length;i++) output += chars[Math.floor(Math.random()*chars.length)];
+      }
+
+      $("#result").textContent = output;
+    });
+  }
+
+  if (name === "Random Number Generator" || name === "Random Number List") {
+    $("#runTool").addEventListener("click",() => {
+      const min = Math.ceil(numberValue("randomMin"));
+      const max = Math.floor(numberValue("randomMax"));
+
+      if (max < min) {
+        $("#result").textContent = "Maximum must be greater than or equal to minimum.";
+        return;
+      }
+
+      const count = name === "Random Number List"
+        ? Math.max(1,Math.min(100,Number($("#randomCount").value)||10))
+        : 1;
+
+      const numbers = Array.from({length:count},() =>
+        Math.floor(Math.random()*(max-min+1))+min);
+
+      $("#result").textContent = numbers.join(", ");
+    });
+  }
+
+  if (name === "Random Color Generator" || name === "Random Hex Color") {
+    $("#runTool").addEventListener("click",() => {
+      const color = "#" + Math.floor(Math.random()*16777215)
+        .toString(16).padStart(6,"0");
+
+      $("#colorPreview").style.background = color;
+      $("#result").textContent = color;
+    });
+  }
+
+  if (name === "Random Choice Picker" || name === "Random Team Generator" ||
+      name === "Shuffle List" || name === "Random Name Picker" ||
+      name === "Decision Picker" || name === "Random Study Topic") {
+    $("#runTool").addEventListener("click",() => {
+      const choices = $("#choicesInput").value.split(/\r?\n/)
+        .map(s => s.trim()).filter(Boolean);
+
+      if (!choices.length) {
+        $("#result").textContent = "Enter at least one choice.";
+        return;
+      }
+
+      if (name === "Shuffle List") {
+        for (let i=choices.length-1;i>0;i--) {
+          const j = Math.floor(Math.random()*(i+1));
+          [choices[i],choices[j]] = [choices[j],choices[i]];
+        }
+
+        $("#result").textContent = choices.join("\n");
+      } else {
+        $("#result").textContent =
+          choices[Math.floor(Math.random()*choices.length)];
+      }
+    });
+  }
+
+  if (name === "Random Yes or No" ||
+      name === "Lucky Number Generator" ||
+      name === "Random Letter") {
+    $("#runTool").addEventListener("click",() => {
+      if (name === "Random Yes or No") {
+        $("#result").textContent = Math.random()<.5 ? "Yes!" : "No!";
+      } else if (name === "Lucky Number Generator") {
+        $("#result").textContent = String(Math.floor(Math.random()*100)+1);
+      } else {
+        $("#result").textContent = String.fromCharCode(65+Math.floor(Math.random()*26));
+      }
+    });
+  }
+
+  if (name === "QR Code Generator") {
+    $("#runTool").addEventListener("click",() => {
+      const text = $("#qrText").value.trim();
+
+      if (!text) {
+        $("#result").textContent = "Enter text or a URL first.";
+        return;
+      }
+
+      const url = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+        encodeURIComponent(text);
+
+      $("#result").innerHTML =
+        `<img alt="Generated QR code" width="220" height="220" src="${url}">`;
+    });
+  }
+
+  if (name === "Image Preview") {
+    $("#imageFile").addEventListener("change",event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        $("#imagePreviewArea").textContent = "Please choose an image file.";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      $("#imagePreviewArea").innerHTML =
+        `<img src="${url}" alt="Selected image preview" style="max-width:100%;max-height:350px;border-radius:12px">`;
+    });
+  }
+
+  if (name === "Image to Data URL" || name === "Image Base64 Viewer") {
+    $("#imageFile").addEventListener("change",event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => $("#result").textContent = String(reader.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (name === "Text to TXT File") {
+    $("#runTool").addEventListener("click",() => {
+      const blob = new Blob([$("#inputText").value],{type:"text/plain;charset=utf-8"});
+      downloadBlob(blob,"mrtool-text.txt");
+      $("#result").textContent = "Your text file has been downloaded.";
+    });
+  }
+
+  if (name === "HTML Preview") {
+    $("#runTool").addEventListener("click",() => {
+      $("#htmlPreviewFrame").srcdoc = $("#htmlCode").value;
+    });
+  }
+
+  if (name === "CSS Gradient Generator") {
+    const updateGradient = () => {
+      const c1 = $("#gradientColor1").value;
+      const c2 = $("#gradientColor2").value;
+      const direction = $("#gradientDirection").value;
+
+      $("#gradientPreview").style.background = `linear-gradient(${direction},${c1},${c2})`;
+    };
+
+    ["gradientColor1","gradientColor2","gradientDirection"].forEach(id => {
+      $("#"+id).addEventListener("input",updateGradient);
+    });
+
+    $("#runTool").addEventListener("click",() => {
+      $("#result").textContent =
+        `background: linear-gradient(${$("#gradientDirection").value}, ${$("#gradientColor1").value}, ${$("#gradientColor2").value});`;
+    });
+  }
+
+  if (name === "Age Calculator") {
+    $("#runTool").addEventListener("click",() => {
+      const date = new Date($("#birthDate").value);
+
+      if (!$("#birthDate").value || Number.isNaN(date.getTime()) || date > new Date()) {
+        $("#result").textContent = "Enter a valid date of birth.";
+        return;
+      }
+
+      const now = new Date();
+      let years = now.getFullYear()-date.getFullYear();
+      let months = now.getMonth()-date.getMonth();
+      let days = now.getDate()-date.getDate();
+
+      if (days<0) {
+        months--;
+        days += new Date(now.getFullYear(),now.getMonth(),0).getDate();
+      }
+
+      if (months<0) {
+        years--;
+        months+=12;
+      }
+
+      $("#result").textContent = `${years} years, ${months} months, ${days} days`;
+    });
+  }
+
+  if (name === "Date Difference Calculator" || name === "Days Between Dates") {
+    $("#runTool").addEventListener("click",() => {
+      const a = new Date($("#dateStart").value);
+      const b = new Date($("#dateEnd").value);
+
+      if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) {
+        $("#result").textContent = "Choose both dates.";
+        return;
+      }
+
+      const days = Math.round(Math.abs(b-a)/86400000);
+      $("#result").textContent = `Difference: ${days} days.`;
+    });
+  }
+
+  if (name === "Countdown Timer" || name === "Pomodoro Timer" ||
+      name === "Study Timer") {
+    $("#startTimer").addEventListener("click",() => {
+      clearInterval(runningTimer);
+
+      let seconds = Math.max(1,Number($("#timerMinutes").value)||25)*60;
+
+      const update = () => {
+        $("#timerDisplay").textContent =
+          `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
+
+        if (seconds <= 0) {
+          clearInterval(runningTimer);
+          runningTimer = null;
+          $("#result").textContent = "Timer complete!";
+          return;
+        }
+
+        seconds--;
+      };
+
+      update();
+      runningTimer = setInterval(update,1000);
+    });
+
+    $("#stopTimer").addEventListener("click",() => {
+      clearInterval(runningTimer);
+      runningTimer = null;
+    });
+  }
+
+  if (name === "Stopwatch") {
+    $("#startStopwatch").addEventListener("click",() => {
+      if (stopwatchInterval) return;
+
+      stopwatchStart = Date.now()-stopwatchElapsed;
+
+      stopwatchInterval = setInterval(() => {
+        stopwatchElapsed = Date.now()-stopwatchStart;
+
+        const total = stopwatchElapsed/1000;
+        const minutes = Math.floor(total/60);
+        const seconds = Math.floor(total%60);
+        const tenths = Math.floor((total%1)*10);
+
+        $("#stopwatchDisplay").textContent =
+          `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}.${tenths}`;
+      },100);
+    });
+
+    $("#stopStopwatch").addEventListener("click",() => {
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = null;
+    });
+
+    $("#resetStopwatch").addEventListener("click",() => {
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = null;
+      stopwatchElapsed = 0;
+      $("#stopwatchDisplay").textContent = "00:00.0";
+    });
+  }
+
+  if (name === "Unix Timestamp Converter" || name === "Timestamp to Date") {
+    body.insertAdjacentHTML("beforeend",`
+      <p class="setting-note">Enter a Unix timestamp in seconds or milliseconds to convert it to a date.</p>
+    `);
+  }
+
+  if (name === "Timestamp to Date" || name === "Unix Timestamp Converter") {
+    const input = document.createElement("input");
+    input.className = "field";
+    input.id = "timestampInput";
+    input.placeholder = "Example: 1735689600";
+    body.insertBefore(input,body.querySelector("#runTool"));
+  }
+
+  if (name === "Timestamp to Date" || name === "Unix Timestamp Converter") {
+    $("#runTool").addEventListener("click",() => {
+      const raw = $("#timestampInput").value.trim();
+      const value = Number(raw);
+
+      if (!raw || !Number.isFinite(value)) {
+        $("#result").textContent = "Enter a valid timestamp.";
+        return;
+      }
+
+      const milliseconds = Math.abs(value)<1e12 ? value*1000 : value;
+      const date = new Date(milliseconds);
+
+      $("#result").textContent = Number.isNaN(date.getTime())
+        ? "Invalid timestamp."
+        : date.toLocaleString();
+    });
+  }
+
+  if (name === "Current Date and Time") {
+    $("#modalBody").insertAdjacentHTML("beforeend",`
+      <div class="result-box" id="currentDateTime"></div>
+    `);
+
+    const update = () => {
+      const el = $("#currentDateTime");
+      if (el) el.textContent = new Date().toLocaleString();
+    };
+
+    update();
+    const interval = setInterval(update,1000);
+
+    $("#modalClose").addEventListener("click",() => clearInterval(interval),{once:true});
+  }
+
+  if (name === "File Extension Checker" || name === "MIME Type Helper" ||
+      name === "Text File Reader" || name === "CSV Preview" ||
+      name === "JSON File Preview" || name === "Image File Size Checker") {
+    $("#genericFile").addEventListener("change",async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (name === "Image File Size Checker") {
+        $("#result").textContent =
+          `Name: ${file.name}\nSize: ${formatBytes(file.size)}\nType: ${file.type || "Unknown"}`;
+        return;
+      }
+
+      if (name === "File Extension Checker") {
+        $("#result").textContent =
+          `File: ${file.name}\nExtension: ${file.name.includes(".") ? file.name.split(".").pop() : "No extension"}`;
+        return;
+      }
+
+      if (name === "MIME Type Helper") {
+        $("#result").textContent = file.type || "The browser did not provide a MIME type.";
+        return;
+      }
+
+      if (file.size > 2*1024*1024) {
+        $("#result").textContent = "For this demo, choose a file smaller than 2 MB.";
+        return;
+      }
+
+      const text = await file.text();
+
+      if (name === "JSON File Preview") {
+        try {
+          $("#result").textContent = JSON.stringify(JSON.parse(text),null,2);
+        } catch {
+          $("#result").textContent = "The selected file is not valid JSON.";
+        }
+      } else {
+        $("#result").textContent = text;
+      }
+    });
+  }
+}
+
+/* ======================================================
+   CALCULATOR ENGINE
+   ====================================================== */
+
+let calcExpression = "0";
+let calcJustEvaluated = false;
+
+function updateCalc() {
+  $("#calcDisplay").value = calcExpression;
+}
+
+function safeCalculate(expression) {
+  expression = expression
+    .replace(/×/g,"*")
+    .replace(/÷/g,"/")
+    .replace(/−/g,"-")
+    .replace(/π/g,String(Math.PI));
+
+  if (!expression.trim()) return 0;
+
+  if (!/^[0-9+\-*/().%\s]+$/.test(expression)) {
+    throw new Error("Invalid expression");
+  }
+
+  const tokens = expression.match(
+    /\d+(?:\.\d+)?|[()+\-*/%]/g
+  ) || [];
+
+  if (tokens.join("") !== expression.replace(/\s/g,"")) {
+    throw new Error("Invalid expression");
+  }
+
+  let index = 0;
+
+  function parseExpression() {
+    let value = parseTerm();
+
+    while (tokens[index] === "+" || tokens[index] === "-") {
+      const op = tokens[index++];
+
+      if (op === "+") value += parseTerm();
+      else value -= parseTerm();
+    }
+
+    return value;
+  }
+
+  function parseTerm() {
+    let value = parseUnary();
+
+    while (["*","/","%"].includes(tokens[index])) {
+      const op = tokens[index++];
+
+      if (op === "*") value *= parseUnary();
+
+      if (op === "/") {
+        const divisor = parseUnary();
+        if (divisor === 0) throw new Error("Cannot divide by zero.");
+        value /= divisor;
+      }
+
+      if (op === "%") {
+        const divisor = parseUnary();
+        if (divisor === 0) throw new Error("Cannot divide by zero.");
+        value %= divisor;
+      }
+    }
+
+    return value;
+  }
+
+  function parseUnary() {
+    if (tokens[index] === "+") {
+      index++;
+      return parseUnary();
+    }
+
+    if (tokens[index] === "-") {
+      index++;
+      return -parseUnary();
+    }
+
+    return parsePrimary();
+  }
+
+  function parsePrimary() {
+    const token = tokens[index++];
+
+    if (token === "(") {
+      const value = parseExpression();
+
+      if (tokens[index++] !== ")") {
+        throw new Error("Missing closing parenthesis.");
+      }
+
+      return value;
+    }
+
+    if (!token || !/^\d+(?:\.\d+)?$/.test(token)) {
+      throw new Error("Invalid expression.");
+    }
+
+    return Number(token);
+  }
+
+  const result = parseExpression();
+
+  if (index !== tokens.length) throw new Error("Invalid expression.");
+  if (!Number.isFinite(result)) throw new Error("Invalid result.");
+
+  return result;
+}
+
+function calculatorPress(value) {
+  if (value === "AC") {
+    calcExpression = "0";
+    calcJustEvaluated = false;
+  }
+
+  else if (value === "DEL") {
+    calcExpression = calcExpression.length > 1
+      ? calcExpression.slice(0,-1)
+      : "0";
+    calcJustEvaluated = false;
+  }
+
+  else if (value === "=") {
+    try {
+      const result = safeCalculate(calcExpression);
+      calcExpression = String(Number(result.toPrecision(12)));
+      calcJustEvaluated = true;
+    } catch(error) {
+      calcExpression = "Error";
+      calcJustEvaluated = true;
+    }
+  }
+
+  else if (value === "sqrt") {
+    try {
+      const n = safeCalculate(calcExpression);
+      if (n < 0) throw new Error();
+      calcExpression = String(Math.sqrt(n));
+      calcJustEvaluated = true;
+    } catch {
+      calcExpression = "Error";
+      calcJustEvaluated = true;
+    }
+  }
+
+  else if (value === "square") {
+    try {
+      const n = safeCalculate(calcExpression);
+      calcExpression = String(n*n);
+      calcJustEvaluated = true;
+    } catch {
+      calcExpression = "Error";
+      calcJustEvaluated = true;
+    }
+  }
+
+  else if (value === "sign") {
+    try {
+      calcExpression = String(-safeCalculate(calcExpression));
+      calcJustEvaluated = true;
+    } catch {
+      calcExpression = "0";
+    }
+  }
+
+  else {
+    if (calcExpression === "Error" ||
+        (calcJustEvaluated && /[0-9.(]/.test(value))) {
+      calcExpression = "0";
+    }
+
+    if (calcExpression === "0" && /^[0-9.]$/.test(value)) {
+      calcExpression = value;
+    } else {
+      calcExpression += value;
+    }
+
+    calcJustEvaluated = false;
+  }
+
+  updateCalc();
+}
+
+$$("[data-calc]").forEach(button => {
+  button.addEventListener("click",() => {
+    calculatorPress(button.dataset.calc);
+  });
+});
+
+document.addEventListener("keydown",event => {
+  if (!$("#page-calculator").classList.contains("active")) return;
+
+  if (/^[0-9.+\-*/()%]$/.test(event.key)) {
+    event.preventDefault();
+
+    const mapping = {
+      "*":"×",
+      "/":"÷",
+      "-":"-",
+      "+":"+",
+      "%":"%"
+    };
+
+    calculatorPress(mapping[event.key] || event.key);
+  }
+
+  else if (event.key === "Enter" || event.key === "=") {
+    event.preventDefault();
+    calculatorPress("=");
+  }
+
+  else if (event.key === "Backspace") {
+    calculatorPress("DEL");
+  }
+
+  else if (event.key === "Escape") {
+    calculatorPress("AC");
+  }
+});
+
+document.addEventListener("click",event => {
+  if (event.target.id === "openCalculator") {
+    closeTool();
+    showPage("calculator");
+  }
+});
+
+/* ======================================================
+   HELPERS
+   ====================================================== */
+
+function countWords(text) {
+  return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
+function numberValue(id) {
+  const element = $("#"+id);
+  const value = Number(element?.value);
+
+  if (!element || element.value.trim() === "" || !Number.isFinite(value)) {
+    throw new Error("Enter a valid number.");
+  }
+
+  return value;
+}
+
+function formatNumber(number) {
+  return Number(number.toFixed(6)).toLocaleString();
+}
+
+function isPrime(n) {
+  if (n < 2) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+
+  for (let i=3;i<=Math.sqrt(n);i+=2) {
+    if (n%i===0) return false;
+  }
+
+  return true;
+}
+
+function gcd(a,b) {
+  while (b) [a,b] = [b,a%b];
+  return a;
+}
+
+function simplifyRatio(w,h) {
+  const d = gcd(Math.round(w),Math.round(h));
+  return `${Math.round(w/d)}:${Math.round(h/d)}`;
+}
+
+function hexToRGB(hex) {
+  hex = hex.trim().replace(/^#/,"");
+
+  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+    hex = hex.split("").map(c => c+c).join("");
+  }
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    throw new Error("Invalid hex color");
+  }
+
+  return {
+    r:parseInt(hex.slice(0,2),16),
+    g:parseInt(hex.slice(2,4),16),
+    b:parseInt(hex.slice(4,6),16)
+  };
+}
+
+function luminance(rgb) {
+  const channels = [rgb.r,rgb.g,rgb.b].map(v => {
+    v /= 255;
+    return v <= .04045 ? v/12.92 : Math.pow((v+.055)/1.055,2.4);
+  });
+
+  return .2126*channels[0]+.7152*channels[1]+.0722*channels[2];
+}
+
+function escapeHTML(text) {
+  return text.replace(/[&<>"']/g,char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
+}
+
+function unescapeHTML(text) {
+  const el = document.createElement("textarea");
+  el.innerHTML = text;
+  return el.value;
+}
+
+function downloadBlob(blob,filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return "0 Bytes";
+
+  const units = ["Bytes","KB","MB","GB"];
+  const index = Math.min(
+    Math.floor(Math.log(bytes)/Math.log(1024)),
+    units.length-1
+  );
+
+  return `${(bytes/Math.pow(1024,index)).toFixed(2)} ${units[index]}`;
+}
+
+/* ======================================================
+   INITIALIZE
+   ====================================================== */
+
+renderCategories();
+renderPopular();
+renderAllTools();
+
+console.log(`Mr.Tool ready: ${tools.length} tools`);
+</script>
+
+</body>
+</html>
